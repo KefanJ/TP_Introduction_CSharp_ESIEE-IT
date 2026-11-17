@@ -1,0 +1,14 @@
+D:\ESIEE-IT\Matiere\C# net\TpCsharp\obj\Debug\net10.0\TpCsharp.GeneratedMSBuildEditorConfig.editorconfig
+D:\ESIEE-IT\Matiere\C# net\TpCsharp\obj\Debug\net10.0\TpCsharp.AssemblyInfoInputs.cache
+D:\ESIEE-IT\Matiere\C# net\TpCsharp\obj\Debug\net10.0\TpCsharp.AssemblyInfo.cs
+D:\ESIEE-IT\Matiere\C# net\TpCsharp\obj\Debug\net10.0\TpCsharp.csproj.CoreCompileInputs.cache
+D:\ESIEE-IT\Matiere\C# net\TpCsharp\bin\Debug\net10.0\TpCsharp.exe
+D:\ESIEE-IT\Matiere\C# net\TpCsharp\bin\Debug\net10.0\TpCsharp.deps.json
+D:\ESIEE-IT\Matiere\C# net\TpCsharp\bin\Debug\net10.0\TpCsharp.runtimeconfig.json
+D:\ESIEE-IT\Matiere\C# net\TpCsharp\bin\Debug\net10.0\TpCsharp.dll
+D:\ESIEE-IT\Matiere\C# net\TpCsharp\bin\Debug\net10.0\TpCsharp.pdb
+D:\ESIEE-IT\Matiere\C# net\TpCsharp\obj\Debug\net10.0\TpCsharp.dll
+D:\ESIEE-IT\Matiere\C# net\TpCsharp\obj\Debug\net10.0\refint\TpCsharp.dll
+D:\ESIEE-IT\Matiere\C# net\TpCsharp\obj\Debug\net10.0\TpCsharp.pdb
+D:\ESIEE-IT\Matiere\C# net\TpCsharp\obj\Debug\net10.0\TpCsharp.genruntimeconfig.cache
+D:\ESIEE-IT\Matiere\C# net\TpCsharp\obj\Debug\net10.0\ref\TpCsharp.dll
