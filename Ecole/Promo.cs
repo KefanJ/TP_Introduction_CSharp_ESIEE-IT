@@ -13,14 +13,24 @@ class Promo
     }
 
 
-public void Inscrire(Etudiant e)
+    public void Inscrire(Etudiant e)
     {
         _etudiants.Add(e);
     }
 
     public double MoyenneGenerale() => _etudiants.Count == 0 ? 0 : _etudiants.Average(e => e.Moyenne());
 
+
+
+
+public Etudiant? Chercher(string nom)
+    {
+        foreach (var e in _etudiants)
+            if (e.Nom == nom)
+            {
+                return e;
+            }
+
+        return null;
+    }
 }
-
-
-    

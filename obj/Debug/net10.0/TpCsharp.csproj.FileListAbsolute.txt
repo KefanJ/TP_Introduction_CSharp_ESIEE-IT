@@ -12,3 +12,4 @@ D:\ESIEE-IT\Matiere\C# net\TpCsharp\obj\Debug\net10.0\refint\TpCsharp.dll
 D:\ESIEE-IT\Matiere\C# net\TpCsharp\obj\Debug\net10.0\TpCsharp.pdb
 D:\ESIEE-IT\Matiere\C# net\TpCsharp\obj\Debug\net10.0\TpCsharp.genruntimeconfig.cache
 D:\ESIEE-IT\Matiere\C# net\TpCsharp\obj\Debug\net10.0\ref\TpCsharp.dll
+D:\ESIEE-IT\Matiere\C# net\TpCsharp\obj\Debug\net10.0\TpCsharp.sourcelink.json

@@ -1,5 +1,5 @@
-﻿//using Ecole;
-using Geometrie;
+﻿using Ecole;
+//using Geometrie;
 // ==========================================
 // --- PARTIE 2 : Types, chaînes et null ---
 // ==========================================
@@ -197,7 +197,119 @@ static string Decrire(object? o) => o switch
 
 // 5.3 Le piège du virtual 
 
-Cercle c = new Cercle(1);
-Forme f = c;
-Console.WriteLine(c.Decrire());
-Console.WriteLine(f.Decrire());
+//Cercle c = new Cercle(1);
+//Forme f = c;
+//Console.WriteLine(c.Decrire());
+//Console.WriteLine(f.Decrire());
+
+// ============================================
+// --- PARTIE 6 : Records et exceptions ---
+// ============================================
+
+//1.
+var n1 = new Note("Lovelace", "Ada", "Algo", 15, 3);
+var n2 = new Note("Lovelace", "Ada", "Algo", 15, 3);
+
+
+Console.WriteLine($"Les notes sont-elles égales ? {n1 == n2}");
+
+Console.WriteLine(n1);
+
+
+var n3 = n1 with { Valeur = 18 };
+Console.WriteLine($"Nouvelle note modifiée : {n3}");
+
+//6.
+var promoCsv = new Promo("M1 Data");
+
+
+//4.
+
+try
+{
+    using var lecteur = new StreamReader("notes.csv"); // auto-fermé
+    lecteur.ReadLine();
+    string? ligne;
+    int numeroLigne = 1;
+
+    while ((ligne = lecteur.ReadLine()) != null)
+    {
+        numeroLigne++;
+
+        try
+        {
+            Note noteLue = LireLigne(ligne, numeroLigne);
+
+            //6.
+            Etudiant? etudiant = promoCsv.Chercher(noteLue.Nom);
+            if (etudiant == null)
+            {
+                etudiant = new Etudiant(noteLue.Nom, noteLue.Prenom, 4);
+                promoCsv.Inscrire(etudiant);
+            }
+            etudiant.AjouterNote(noteLue.Valeur);
+        }
+        catch (NoteInvalideException e)
+        {
+            Console.Error.WriteLine($"Erreur ligne {e.Ligne} : {e.Message}");
+        }
+    }
+}
+//5.
+catch (FileNotFoundException e)
+{
+    Console.Error.WriteLine($" Le fichier '{e.FileName}' est introuvable.");
+}
+
+Console.WriteLine($"Relevé de la promo {promoCsv.Nom}");
+Console.WriteLine($"Moyenne générale : {promoCsv.MoyenneGenerale():F2}");
+
+
+//3.
+
+static Note LireLigne(string ligne, int numero)
+{
+    var colonnes = ligne.Split(',');
+
+
+    if (colonnes.Length != 5)
+    {
+        throw new NoteInvalideException("Nombre de colonnes incorrect.", numero);
+    }
+
+
+    string nom = colonnes[0].Trim();
+    string prenom = colonnes[1].Trim();
+    string matiere = colonnes[2].Trim();
+
+
+    if (!double.TryParse(colonnes[3], System.Globalization.CultureInfo.InvariantCulture, out double valeur) || valeur < 0 || valeur > 20)
+    {
+        throw new NoteInvalideException($"Valeur de note invalide : {colonnes[3]}", numero);
+    }
+
+    if (!int.TryParse(colonnes[4], out int coef))
+    {
+        throw new NoteInvalideException($"Coefficient invalide : {colonnes[4]}", numero);
+    }
+
+
+    return new Note(nom, prenom, matiere, valeur, coef);
+}
+
+
+
+//2.
+
+public class NoteInvalideException : Exception
+{
+    public int Ligne { get; }
+
+    public NoteInvalideException(string message, int ligne) : base(message)
+    {
+        Ligne = ligne;
+    }
+}
+
+
+public record Note(string Nom, string Prenom, string Matiere, double Valeur, int Coef);
