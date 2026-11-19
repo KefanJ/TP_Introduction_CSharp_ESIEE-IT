@@ -199,46 +199,123 @@ notes.RemoveAll(n => n.Matiere == "Reseau");
 //string listeAvecJoin = string.Join(", ", notes.Select(n => n.Prenom).Distinct());
 
 
-//  2.3 Chercher et tester 
+////  2.3 Chercher et tester 
 
-// 1. La note de Linus en BD avec FirstOrDefault. 
-var noteLinusBd = notes.FirstOrDefault(n => n.Prenom == "Linus" && n.Matiere == "BD");
-Console.WriteLine($"FirstOrDefault (Linus en BD) : {(noteLinusBd is null ? "null (aucune note)" : noteLinusBd)}");
+//// 1. La note de Linus en BD avec FirstOrDefault. 
+//var noteLinusBd = notes.FirstOrDefault(n => n.Prenom == "Linus" && n.Matiere == "BD");
+//Console.WriteLine($"FirstOrDefault (Linus en BD) : {(noteLinusBd is null ? "null (aucune note)" : noteLinusBd)}");
 
-try
+//try
+//{
+//    var noteLinusBdFirst = notes.First(n => n.Prenom == "Linus" && n.Matiere == "BD");
+//    Console.WriteLine($"First (Linus en BD) : {noteLinusBdFirst}");
+//}
+//catch (InvalidOperationException ex)
+//{
+//    Console.WriteLine($"First a levé une exception : {ex.Message}");
+//}
+
+//// 2. La note d’Ada en Algo avec Single.
+
+//var noteAdaAlgo = notes.Single(n => n.Prenom == "Ada" && n.Matiere == "Algo");
+//Console.WriteLine($"Single (Ada en Algo) : {noteAdaAlgo}");
+
+//try
+//{
+//    var notesAda = notes.Single(n => n.Prenom == "Ada");
+//    Console.WriteLine($"Single (toutes les notes d'Ada) : {notesAda}");
+//}
+//catch (InvalidOperationException ex)
+//{
+//    Console.WriteLine($"Single (Ada) a levé une exception : {ex.Message}");
+//}
+
+//// 3. Existe-t-il une note inférieure à 10 ?
+//bool existeSous10 = notes.Any(n => n.Valeur < 10);
+//Console.WriteLine($"Existe-t-il une note < 10 ? {existeSous10}");
+
+//bool tousAuMoins12EnBd = notes
+//    .Where(n => n.Matiere == "BD")
+//    .All(n => n.Valeur >= 12);
+//Console.WriteLine($"Tous au moins 12 en BD ? {tousAuMoins12EnBd}");
+
+//// Test de All sur une séquence vide
+//bool allSurVide = Enumerable.Empty<Note>().All(n => n.Valeur >= 12);
+//Console.WriteLine($"All sur une séquence vide : {allSurVide}");
+
+
+// 3. Regrouper et joindre 
+
+// 3.1 GroupBy 
+
+// 1. Regroupez les notes par matière 
+
+var groupesParMatiere = notes.GroupBy(n => n.Matiere);
+
+foreach (var groupe in groupesParMatiere)
 {
-    var noteLinusBdFirst = notes.First(n => n.Prenom == "Linus" && n.Matiere == "BD");
-    Console.WriteLine($"First (Linus en BD) : {noteLinusBdFirst}");
+    Console.WriteLine($"=== Matière : {groupe.Key} ===");
+    foreach (var note in groupe)
+    {
+        Console.WriteLine($"  - {note.Prenom} : {note.Valeur} (coef {note.Coef})");
+    }
 }
-catch (InvalidOperationException ex)
+
+// 2. Statistique
+
+var statsParMatiere = notes
+    .GroupBy(n => n.Matiere)
+    .Select(g => new
+    {
+        Matiere = g.Key,
+        NbNotes = g.Count(),
+        Moyenne = g.Average(n => n.Valeur),
+        Min = g.Min(n => n.Valeur),
+        Max = g.Max(n => n.Valeur),
+        Major = g.MaxBy(n => n.Valeur)!.Prenom
+    })
+    .OrderByDescending(s => s.Moyenne);
+
+foreach (var s in statsParMatiere)
 {
-    Console.WriteLine($"First a levé une exception : {ex.Message}");
+    Console.WriteLine($"{s.Matiere} : {s.NbNotes} notes | Moy: {s.Moyenne:F2} | Min: {s.Min} | Max: {s.Max} | Major: {s.Major}");
 }
 
-// 2. La note d’Ada en Algo avec Single.
 
-var noteAdaAlgo = notes.Single(n => n.Prenom == "Ada" && n.Matiere == "Algo");
-Console.WriteLine($"Single (Ada en Algo) : {noteAdaAlgo}");
+// 3. Calculez la moyenne pondérée
 
-try
+Dictionary<string, double> moyennesEtudiants = notes
+    .GroupBy(n => n.Prenom)
+    .ToDictionary(
+        g => g.Key,
+        g => g.Sum(n => n.Valeur * n.Coef) / g.Sum(n => n.Coef)
+    );
+
+foreach (var (prenom, moyenne) in moyennesEtudiants)
 {
-    var notesAda = notes.Single(n => n.Prenom == "Ada");
-    Console.WriteLine($"Single (toutes les notes d'Ada) : {notesAda}");
+    Console.WriteLine($"{prenom} : moyenne pondérée = {moyenne:F2}");
 }
-catch (InvalidOperationException ex)
+
+
+
+// 4. Comptez les notes par étudiant avec CountBy
+
+// Version .NET 9 avec CountBy
+var nbNotesCountBy = notes.CountBy(n => n.Prenom);
+
+Console.WriteLine("--- Avec CountBy ---");
+foreach (var (prenom, nb) in nbNotesCountBy)
 {
-    Console.WriteLine($"Single (Ada) a levé une exception : {ex.Message}");
+    Console.WriteLine($"{prenom} : {nb} notes");
 }
 
-// 3. Existe-t-il une note inférieure à 10 ?
-bool existeSous10 = notes.Any(n => n.Valeur < 10);
-Console.WriteLine($"Existe-t-il une note < 10 ? {existeSous10}");
+// Version avec GroupBy et Count
+var nbNotesGroupBy = notes
+    .GroupBy(n => n.Prenom)
+    .Select(g => (Prenom: g.Key, Nb: g.Count()));
 
-bool tousAuMoins12EnBd = notes
-    .Where(n => n.Matiere == "BD")
-    .All(n => n.Valeur >= 12);
-Console.WriteLine($"Tous au moins 12 en BD ? {tousAuMoins12EnBd}");
-
-// Test de All sur une séquence vide
-bool allSurVide = Enumerable.Empty<Note>().All(n => n.Valeur >= 12);
-Console.WriteLine($"All sur une séquence vide : {allSurVide}");
+Console.WriteLine("--- Avec GroupBy et Count ---");
+foreach (var item in nbNotesGroupBy)
+{
+    Console.WriteLine($"{item.Prenom} : {item.Nb} notes");
+}
