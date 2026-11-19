@@ -162,41 +162,83 @@ notes.RemoveAll(n => n.Matiere == "Reseau");
 //                       .ToList();
 
 
-// 2.2 Agréger
+//// 2.2 Agréger
 
-// 1. Le nombre de notes.
-var nbNotes = notes.Count();
+//// 1. Le nombre de notes.
+//var nbNotes = notes.Count();
 
-// le nombre de notes inférieures à 10,
-var nbNotesInferDix = notes.Count(n => n.Valeur < 10);
+//// le nombre de notes inférieures à 10,
+//var nbNotesInferDix = notes.Count(n => n.Valeur < 10);
 
-// la moyenne simple de toutes les notes.
-var moyenneNotes = notes.Average(n => n.Valeur);
+//// la moyenne simple de toutes les notes.
+//var moyenneNotes = notes.Average(n => n.Valeur);
 
- // 2.La meilleure note avec Max, p
-double meilleurNote = notes.Max(n => n.Valeur);
-Console.WriteLine($"Meilleur note : {meilleurNote} ");
+// // 2.La meilleure note avec Max, p
+//double meilleurNote = notes.Max(n => n.Valeur);
+//Console.WriteLine($"Meilleur note : {meilleurNote} ");
 
-// Note complète 
-Note noteComplete = notes.MaxBy(n => n.Valeur)!;
-Console.WriteLine($"Note complète : {noteComplete} ");
+//// Note complète 
+//Note noteComplete = notes.MaxBy(n => n.Valeur)!;
+//Console.WriteLine($"Note complète : {noteComplete} ");
 
 
-// 3. La moyenne pondérée de toutes les notes : somme des valeurs × coefficients divisée par la somme des coefficients. 
+//// 3. La moyenne pondérée de toutes les notes : somme des valeurs × coefficients divisée par la somme des coefficients. 
 
-double ponderee = notes.Sum(n => n.Valeur * n.Coef) / notes.Sum(n => n.Coef);
-Console.WriteLine($"Moyenne pondere : {ponderee} ");
+//double ponderee = notes.Sum(n => n.Valeur * n.Coef) / notes.Sum(n => n.Coef);
+//Console.WriteLine($"Moyenne pondere : {ponderee} ");
 
-//4 . La chaîne « Ada, Alan, Grace, Linus, Barbara » (prénoms distincts, dans l’ordre du fichier) avec aggregate 
-string liste = notes.Select(n => n.Prenom).Distinct().Aggregate((acc, nom) => acc + ", " + nom);
+////4 . La chaîne « Ada, Alan, Grace, Linus, Barbara » (prénoms distincts, dans l’ordre du fichier) avec aggregate 
+//string liste = notes.Select(n => n.Prenom).Distinct().Aggregate((acc, nom) => acc + ", " + nom);
 
-foreach (var l in liste)
+//foreach (var l in liste)
+//{
+//    Console.Write(l);
+//}
+
+//// version striing.join
+//string listeAvecJoin = string.Join(", ", notes.Select(n => n.Prenom).Distinct());
+
+
+//  2.3 Chercher et tester 
+
+// 1. La note de Linus en BD avec FirstOrDefault. 
+var noteLinusBd = notes.FirstOrDefault(n => n.Prenom == "Linus" && n.Matiere == "BD");
+Console.WriteLine($"FirstOrDefault (Linus en BD) : {(noteLinusBd is null ? "null (aucune note)" : noteLinusBd)}");
+
+try
 {
-    Console.Write(l);
+    var noteLinusBdFirst = notes.First(n => n.Prenom == "Linus" && n.Matiere == "BD");
+    Console.WriteLine($"First (Linus en BD) : {noteLinusBdFirst}");
+}
+catch (InvalidOperationException ex)
+{
+    Console.WriteLine($"First a levé une exception : {ex.Message}");
 }
 
-// version striing.join
-string listeAvecJoin = string.Join(", ", notes.Select(n => n.Prenom).Distinct());
+// 2. La note d’Ada en Algo avec Single.
 
+var noteAdaAlgo = notes.Single(n => n.Prenom == "Ada" && n.Matiere == "Algo");
+Console.WriteLine($"Single (Ada en Algo) : {noteAdaAlgo}");
 
+try
+{
+    var notesAda = notes.Single(n => n.Prenom == "Ada");
+    Console.WriteLine($"Single (toutes les notes d'Ada) : {notesAda}");
+}
+catch (InvalidOperationException ex)
+{
+    Console.WriteLine($"Single (Ada) a levé une exception : {ex.Message}");
+}
 
+// 3. Existe-t-il une note inférieure à 10 ?
+bool existeSous10 = notes.Any(n => n.Valeur < 10);
+Console.WriteLine($"Existe-t-il une note < 10 ? {existeSous10}");
+
+bool tousAuMoins12EnBd = notes
+    .Where(n => n.Matiere == "BD")
+    .All(n => n.Valeur >= 12);
+Console.WriteLine($"Tous au moins 12 en BD ? {tousAuMoins12EnBd}");
+
+// Test de All sur une séquence vide
+bool allSurVide = Enumerable.Empty<Note>().All(n => n.Valeur >= 12);
+Console.WriteLine($"All sur une séquence vide : {allSurVide}");
