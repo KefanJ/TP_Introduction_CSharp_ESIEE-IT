@@ -246,76 +246,193 @@ notes.RemoveAll(n => n.Matiere == "Reseau");
 
 // 3. Regrouper et joindre 
 
-// 3.1 GroupBy 
+//// 3.1 GroupBy 
 
-// 1. Regroupez les notes par matière 
+//// 1. Regroupez les notes par matière 
 
-var groupesParMatiere = notes.GroupBy(n => n.Matiere);
+//var groupesParMatiere = notes.GroupBy(n => n.Matiere);
 
-foreach (var groupe in groupesParMatiere)
-{
-    Console.WriteLine($"=== Matière : {groupe.Key} ===");
-    foreach (var note in groupe)
-    {
-        Console.WriteLine($"  - {note.Prenom} : {note.Valeur} (coef {note.Coef})");
-    }
-}
+//foreach (var groupe in groupesParMatiere)
+//{
+//    Console.WriteLine($"=== Matière : {groupe.Key} ===");
+//    foreach (var note in groupe)
+//    {
+//        Console.WriteLine($"  - {note.Prenom} : {note.Valeur} (coef {note.Coef})");
+//    }
+//}
 
-// 2. Statistique
+//// 2. Statistique
 
-var statsParMatiere = notes
-    .GroupBy(n => n.Matiere)
-    .Select(g => new
-    {
-        Matiere = g.Key,
-        NbNotes = g.Count(),
-        Moyenne = g.Average(n => n.Valeur),
-        Min = g.Min(n => n.Valeur),
-        Max = g.Max(n => n.Valeur),
-        Major = g.MaxBy(n => n.Valeur)!.Prenom
-    })
-    .OrderByDescending(s => s.Moyenne);
+//var statsParMatiere = notes
+//    .GroupBy(n => n.Matiere)
+//    .Select(g => new
+//    {
+//        Matiere = g.Key,
+//        NbNotes = g.Count(),
+//        Moyenne = g.Average(n => n.Valeur),
+//        Min = g.Min(n => n.Valeur),
+//        Max = g.Max(n => n.Valeur),
+//        Major = g.MaxBy(n => n.Valeur)!.Prenom
+//    })
+//    .OrderByDescending(s => s.Moyenne);
 
-foreach (var s in statsParMatiere)
-{
-    Console.WriteLine($"{s.Matiere} : {s.NbNotes} notes | Moy: {s.Moyenne:F2} | Min: {s.Min} | Max: {s.Max} | Major: {s.Major}");
-}
+//foreach (var s in statsParMatiere)
+//{
+//    Console.WriteLine($"{s.Matiere} : {s.NbNotes} notes | Moy: {s.Moyenne:F2} | Min: {s.Min} | Max: {s.Max} | Major: {s.Major}");
+//}
 
 
-// 3. Calculez la moyenne pondérée
+//// 3. Calculez la moyenne pondérée
 
-Dictionary<string, double> moyennesEtudiants = notes
+//Dictionary<string, double> moyennesEtudiants = notes
+//    .GroupBy(n => n.Prenom)
+//    .ToDictionary(
+//        g => g.Key,
+//        g => g.Sum(n => n.Valeur * n.Coef) / g.Sum(n => n.Coef)
+//    );
+
+//foreach (var (prenom, moyenne) in moyennesEtudiants)
+//{
+//    Console.WriteLine($"{prenom} : moyenne pondérée = {moyenne:F2}");
+//}
+
+
+
+//// 4. Comptez les notes par étudiant avec CountBy
+
+//// Version .NET 9 avec CountBy
+//var nbNotesCountBy = notes.CountBy(n => n.Prenom);
+
+//Console.WriteLine("--- Avec CountBy ---");
+//foreach (var (prenom, nb) in nbNotesCountBy)
+//{
+//    Console.WriteLine($"{prenom} : {nb} notes");
+//}
+
+//// Version avec GroupBy et Count
+//var nbNotesGroupBy = notes
+//    .GroupBy(n => n.Prenom)
+//    .Select(g => (Prenom: g.Key, Nb: g.Count()));
+
+//Console.WriteLine("--- Avec GroupBy et Count ---");
+//foreach (var item in nbNotesGroupBy)
+//{
+//    Console.WriteLine($"{item.Prenom} : {item.Nb} notes");
+//}
+
+
+//// 3.2 Join 
+
+//// 1. Jointure avec clé composite 
+
+//var releve = notes.Join(
+//    inscrits,
+//    n => (n.Nom, n.Prenom),          // Clé côté notes (tuple)
+//    i => (i.Nom, i.Prenom),          // Clé côté inscrits (tuple)
+//    (n, i) => new { i.Prenom, i.Promo, n.Matiere, n.Valeur }
+//).ToList();
+
+//Console.WriteLine("=== Relevé complet ===");
+//foreach (var r in releve)
+//{
+//    Console.WriteLine($"{r.Prenom} ({r.Promo}) - {r.Matiere} : {r.Valeur}");
+//}
+
+//// 2. Moyenne simple par promo
+
+//var moyennesParPromo = releve
+//    .GroupBy(r => r.Promo)
+//    .Select(g => new
+//    {
+//        Promo = g.Key,
+//        Moyenne = g.Average(r => r.Valeur)
+//    });
+
+//Console.WriteLine("\n=== Moyenne par promo ===");
+//foreach (var p in moyennesParPromo)
+//{
+//    Console.WriteLine($"{p.Promo} : {p.Moyenne:F2}");
+//}
+
+//// 3. Trouvez les inscrits sans aucune note
+
+//// Méthode : Where + Any
+//var sansNoteWhere = inscrits
+//    .Where(i => !notes.Any(n => n.Nom == i.Nom && n.Prenom == i.Prenom));
+
+//Console.WriteLine("\n=== Sans note (Where + Any) ===");
+//foreach (var i in sansNoteWhere)
+//{
+//    Console.WriteLine($"{i.Prenom} {i.Nom} ({i.Promo})");
+//}
+
+//// Méthode  : GroupJoin 
+//var sansNoteGroupJoin = inscrits
+//    .GroupJoin(
+//        notes,
+//        i => (i.Nom, i.Prenom),
+//        n => (n.Nom, n.Prenom),
+//        (i, notesEtudiant) => new { Inscrit = i, Notes = notesEtudiant }
+//    )
+//    .Where(x => !x.Notes.Any())
+//    .Select(x => x.Inscrit);
+
+//Console.WriteLine("\n=== Sans note (GroupJoin) ===");
+//foreach (var i in sansNoteGroupJoin)
+//{
+//    Console.WriteLine($"{i.Prenom} {i.Nom} ({i.Promo})");
+//}
+
+//// 4. Index avec ToLookup
+
+//ILookup<string, Note> indexNotes = notes.ToLookup(n => n.Prenom);
+
+//Console.WriteLine("\n=== Notes de Grace ===");
+//foreach (var n in indexNotes["Grace"])
+//{
+//    Console.WriteLine($"{n.Matiere} : {n.Valeur} (coef {n.Coef})");
+//}
+
+//// Test avec un prénom absent
+//var notesAbsent = indexNotes["Margaret"];
+//Console.WriteLine($"\nNombre de notes pour Margaret : {notesAbsent.Count()}");
+
+
+// 3.3 SelectMany
+
+// 1. Construisez la liste des bulletins à partir des notes (GroupBy puis Select). 
+
+List<Bulletin> bulletins = notes
     .GroupBy(n => n.Prenom)
-    .ToDictionary(
-        g => g.Key,
-        g => g.Sum(n => n.Valeur * n.Coef) / g.Sum(n => n.Coef)
-    );
+    .Select(g => new Bulletin(g.Key, g.Select(n => n.Valeur).ToList()))
+    .ToList();
 
-foreach (var (prenom, moyenne) in moyennesEtudiants)
+Console.WriteLine("=== Bulletins ===");
+foreach (var b in bulletins)
 {
-    Console.WriteLine($"{prenom} : moyenne pondérée = {moyenne:F2}");
+    Console.WriteLine($"{b.Prenom} : [{string.Join(", ", b.Valeurs)}]");
 }
 
+//2. Retrouvez la liste « à plat » de toutes les valeurs avec SelectMany. 
 
+// Avec SelectMany : une seule liste plate de doubles
+IEnumerable<double> toutesLesValeurs = bulletins.SelectMany(b => b.Valeurs);
 
-// 4. Comptez les notes par étudiant avec CountBy
+Console.WriteLine("\n=== Toutes les valeurs à plat (SelectMany) ===");
+Console.WriteLine(string.Join(", ", toutesLesValeurs));
 
-// Version .NET 9 avec CountBy
-var nbNotesCountBy = notes.CountBy(n => n.Prenom);
+// Comparaison avec Select (pour observer le type)
+IEnumerable<List<double>> listesDeValeurs = bulletins.Select(b => b.Valeurs);
 
-Console.WriteLine("--- Avec CountBy ---");
-foreach (var (prenom, nb) in nbNotesCountBy)
+// 3. Avec la seconde forme de SelectMany, produisez des paires (prénom, valeur). 
+
+var paires = bulletins.SelectMany(
+    b => b.Valeurs,                                  // 1. Quelle sous-collection aplatir
+    (bulletin, valeur) => (bulletin.Prenom, valeur)  // 2. Comment combiner le parent et chaque élément
+);
+
+Console.WriteLine("\n=== Paires (Prénom, Valeur) ===");
+foreach (var (prenom, valeur) in paires)
 {
-    Console.WriteLine($"{prenom} : {nb} notes");
-}
-
-// Version avec GroupBy et Count
-var nbNotesGroupBy = notes
-    .GroupBy(n => n.Prenom)
-    .Select(g => (Prenom: g.Key, Nb: g.Count()));
-
-Console.WriteLine("--- Avec GroupBy et Count ---");
-foreach (var item in nbNotesGroupBy)
-{
-    Console.WriteLine($"{item.Prenom} : {item.Nb} notes");
+    Console.WriteLine($"{prenom} -> {valeur}");
 }
