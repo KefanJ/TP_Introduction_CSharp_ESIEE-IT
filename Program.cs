@@ -398,41 +398,122 @@ notes.RemoveAll(n => n.Matiere == "Reseau");
 //Console.WriteLine($"\nNombre de notes pour Margaret : {notesAbsent.Count()}");
 
 
-// 3.3 SelectMany
+//// 3.3 SelectMany
 
-// 1. Construisez la liste des bulletins à partir des notes (GroupBy puis Select). 
+//// 1. Construisez la liste des bulletins à partir des notes (GroupBy puis Select). 
 
-List<Bulletin> bulletins = notes
-    .GroupBy(n => n.Prenom)
-    .Select(g => new Bulletin(g.Key, g.Select(n => n.Valeur).ToList()))
+//List<Bulletin> bulletins = notes
+//    .GroupBy(n => n.Prenom)
+//    .Select(g => new Bulletin(g.Key, g.Select(n => n.Valeur).ToList()))
+//    .ToList();
+
+//Console.WriteLine("=== Bulletins ===");
+//foreach (var b in bulletins)
+//{
+//    Console.WriteLine($"{b.Prenom} : [{string.Join(", ", b.Valeurs)}]");
+//}
+
+////2. Retrouvez la liste « à plat » de toutes les valeurs avec SelectMany. 
+
+//// Avec SelectMany : une seule liste plate de doubles
+//IEnumerable<double> toutesLesValeurs = bulletins.SelectMany(b => b.Valeurs);
+
+//Console.WriteLine("\n=== Toutes les valeurs à plat (SelectMany) ===");
+//Console.WriteLine(string.Join(", ", toutesLesValeurs));
+
+//// Comparaison avec Select (pour observer le type)
+//IEnumerable<List<double>> listesDeValeurs = bulletins.Select(b => b.Valeurs);
+
+//// 3. Avec la seconde forme de SelectMany, produisez des paires (prénom, valeur). 
+
+//var paires = bulletins.SelectMany(
+//    b => b.Valeurs,                                  // 1. Quelle sous-collection aplatir
+//    (bulletin, valeur) => (bulletin.Prenom, valeur)  // 2. Comment combiner le parent et chaque élément
+//);
+
+//Console.WriteLine("\n=== Paires (Prénom, Valeur) ===");
+//foreach (var (prenom, valeur) in paires)
+//{
+//    Console.WriteLine($"{prenom} -> {valeur}");
+//}
+
+// 4. L’évaluation différée
+
+
+// Affiche toute les notes supérieur ou égal à 15
+var bonnes = notes.Where(n => n.Valeur >= 15);
+Console.WriteLine(bonnes.Count());
+
+
+// On ajoute une note à Hamilton une note de 19 en algo coef 3. On reaffiche le nombre de note supérieur ou égal à 15
+notes.Add(new Note("Hamilton", "Margaret", "Algo", 19, 3));
+Console.WriteLine(bonnes.Count());
+
+/*
+ * On crééer une liste qui stock les notes supérieur ou égal à 15
+ * Ensuite on à ajoute à la liste des notes une nouvelle note qui est un 20 à Hamilton dans la matière BD coef 2
+ *  A la fin on voit la comparaison  de  la liste bonne et la liste figee on voit que la nouvelle de note hamilton à été pris en compte dans la liste bonnes mais dans  figee
+ 
+ */
+
+var figees = notes.Where(n => n.Valeur >= 15).ToList();
+notes.Add(new Note("Hamilton", "Margaret", "BD", 20, 2));
+Console.WriteLine(bonnes.Count() + " / " + figees.Count);
+
+//2. Ajoutez un effet de bord 
+
+Console.WriteLine("\n=== Sans ToList (2 appels à Count) ===");
+var bonnesTrace = notes.Where(n =>
+{
+    Console.WriteLine($"  test de {n.Prenom} ({n.Matiere}) : {n.Valeur}");
+    return n.Valeur >= 15;
+});
+
+Console.WriteLine($"Count 1 : {bonnesTrace.Count()}");
+Console.WriteLine($"Count 2 : {bonnesTrace.Count()}");
+
+Console.WriteLine("\n=== Avec ToList d'abord ===");
+var bonnesFigees = notes.Where(n =>
+{
+    Console.WriteLine($"  test de {n.Prenom} ({n.Matiere}) : {n.Valeur}");
+    return n.Valeur >= 15;
+}).ToList();
+
+Console.WriteLine($"Count 1 : {bonnesFigees.Count}");
+Console.WriteLine($"Count 2 : {bonnesFigees.Count}");
+
+// 3. Remplacez Count() > 0 par Any() dans le même montage.
+
+Console.WriteLine("\n=== Test avec Count() > 0 ===");
+bool avecCount = bonnesTrace.Count() > 0;
+Console.WriteLine($"Résultat Count() > 0 : {avecCount}");
+
+Console.WriteLine("\n=== Test avec Any() ===");
+bool avecAny = bonnesTrace.Any();
+Console.WriteLine($"Résultat Any() : {avecAny}");
+
+// 4. Placez le Where avant puis après un OrderBy dans une même requête. 
+
+Console.WriteLine("\n=== Where AVANT OrderBy ===");
+int nbTriesAvant = 0;
+var resAvant = notes
+    .Where(n => n.Valeur >= 15)
+    .OrderBy(n =>
+    {
+        nbTriesAvant++;
+        return n.Valeur;
+    })
     .ToList();
+Console.WriteLine($"Notes passées par le tri : {nbTriesAvant}");
 
-Console.WriteLine("=== Bulletins ===");
-foreach (var b in bulletins)
-{
-    Console.WriteLine($"{b.Prenom} : [{string.Join(", ", b.Valeurs)}]");
-}
-
-//2. Retrouvez la liste « à plat » de toutes les valeurs avec SelectMany. 
-
-// Avec SelectMany : une seule liste plate de doubles
-IEnumerable<double> toutesLesValeurs = bulletins.SelectMany(b => b.Valeurs);
-
-Console.WriteLine("\n=== Toutes les valeurs à plat (SelectMany) ===");
-Console.WriteLine(string.Join(", ", toutesLesValeurs));
-
-// Comparaison avec Select (pour observer le type)
-IEnumerable<List<double>> listesDeValeurs = bulletins.Select(b => b.Valeurs);
-
-// 3. Avec la seconde forme de SelectMany, produisez des paires (prénom, valeur). 
-
-var paires = bulletins.SelectMany(
-    b => b.Valeurs,                                  // 1. Quelle sous-collection aplatir
-    (bulletin, valeur) => (bulletin.Prenom, valeur)  // 2. Comment combiner le parent et chaque élément
-);
-
-Console.WriteLine("\n=== Paires (Prénom, Valeur) ===");
-foreach (var (prenom, valeur) in paires)
-{
-    Console.WriteLine($"{prenom} -> {valeur}");
-}
+Console.WriteLine("\n=== Where APRÈS OrderBy ===");
+int nbTriesApres = 0;
+var resApres = notes
+    .OrderBy(n =>
+    {
+        nbTriesApres++;
+        return n.Valeur;
+    })
+    .Where(n => n.Valeur >= 15)
+    .ToList();
+Console.WriteLine($"Notes passées par le tri : {nbTriesApres}");
