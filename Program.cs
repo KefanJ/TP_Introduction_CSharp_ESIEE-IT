@@ -437,83 +437,106 @@ notes.RemoveAll(n => n.Matiere == "Reseau");
 //    Console.WriteLine($"{prenom} -> {valeur}");
 //}
 
-// 4. L’évaluation différée
+//// 4. L’évaluation différée
 
 
-// Affiche toute les notes supérieur ou égal à 15
-var bonnes = notes.Where(n => n.Valeur >= 15);
-Console.WriteLine(bonnes.Count());
+//// Affiche toute les notes supérieur ou égal à 15
+//var bonnes = notes.Where(n => n.Valeur >= 15);
+//Console.WriteLine(bonnes.Count());
 
 
-// On ajoute une note à Hamilton une note de 19 en algo coef 3. On reaffiche le nombre de note supérieur ou égal à 15
-notes.Add(new Note("Hamilton", "Margaret", "Algo", 19, 3));
-Console.WriteLine(bonnes.Count());
+//// On ajoute une note à Hamilton une note de 19 en algo coef 3. On reaffiche le nombre de note supérieur ou égal à 15
+//notes.Add(new Note("Hamilton", "Margaret", "Algo", 19, 3));
+//Console.WriteLine(bonnes.Count());
 
-/*
- * On crééer une liste qui stock les notes supérieur ou égal à 15
- * Ensuite on à ajoute à la liste des notes une nouvelle note qui est un 20 à Hamilton dans la matière BD coef 2
- *  A la fin on voit la comparaison  de  la liste bonne et la liste figee on voit que la nouvelle de note hamilton à été pris en compte dans la liste bonnes mais dans  figee
- 
- */
+///*
+// * On crééer une liste qui stock les notes supérieur ou égal à 15
+// * Ensuite on à ajoute à la liste des notes une nouvelle note qui est un 20 à Hamilton dans la matière BD coef 2
+// *  A la fin on voit la comparaison  de  la liste bonne et la liste figee on voit que la nouvelle de note hamilton à été pris en compte dans la liste bonnes mais dans  figee
 
-var figees = notes.Where(n => n.Valeur >= 15).ToList();
-notes.Add(new Note("Hamilton", "Margaret", "BD", 20, 2));
-Console.WriteLine(bonnes.Count() + " / " + figees.Count);
+// */
 
-//2. Ajoutez un effet de bord 
+//var figees = notes.Where(n => n.Valeur >= 15).ToList();
+//notes.Add(new Note("Hamilton", "Margaret", "BD", 20, 2));
+//Console.WriteLine(bonnes.Count() + " / " + figees.Count);
 
-Console.WriteLine("\n=== Sans ToList (2 appels à Count) ===");
-var bonnesTrace = notes.Where(n =>
+////2. Ajoutez un effet de bord 
+
+//Console.WriteLine("\n=== Sans ToList (2 appels à Count) ===");
+//var bonnesTrace = notes.Where(n =>
+//{
+//    Console.WriteLine($"  test de {n.Prenom} ({n.Matiere}) : {n.Valeur}");
+//    return n.Valeur >= 15;
+//});
+
+//Console.WriteLine($"Count 1 : {bonnesTrace.Count()}");
+//Console.WriteLine($"Count 2 : {bonnesTrace.Count()}");
+
+//Console.WriteLine("\n=== Avec ToList d'abord ===");
+//var bonnesFigees = notes.Where(n =>
+//{
+//    Console.WriteLine($"  test de {n.Prenom} ({n.Matiere}) : {n.Valeur}");
+//    return n.Valeur >= 15;
+//}).ToList();
+
+//Console.WriteLine($"Count 1 : {bonnesFigees.Count}");
+//Console.WriteLine($"Count 2 : {bonnesFigees.Count}");
+
+//// 3. Remplacez Count() > 0 par Any() dans le même montage.
+
+//Console.WriteLine("\n=== Test avec Count() > 0 ===");
+//bool avecCount = bonnesTrace.Count() > 0;
+//Console.WriteLine($"Résultat Count() > 0 : {avecCount}");
+
+//Console.WriteLine("\n=== Test avec Any() ===");
+//bool avecAny = bonnesTrace.Any();
+//Console.WriteLine($"Résultat Any() : {avecAny}");
+
+//// 4. Placez le Where avant puis après un OrderBy dans une même requête. 
+
+//Console.WriteLine("\n=== Where AVANT OrderBy ===");
+//int nbTriesAvant = 0;
+//var resAvant = notes
+//    .Where(n => n.Valeur >= 15)
+//    .OrderBy(n =>
+//    {
+//        nbTriesAvant++;
+//        return n.Valeur;
+//    })
+//    .ToList();
+//Console.WriteLine($"Notes passées par le tri : {nbTriesAvant}");
+
+//Console.WriteLine("\n=== Where APRÈS OrderBy ===");
+//int nbTriesApres = 0;
+//var resApres = notes
+//    .OrderBy(n =>
+//    {
+//        nbTriesApres++;
+//        return n.Valeur;
+//    })
+//    .Where(n => n.Valeur >= 15)
+//    .ToList();
+//Console.WriteLine($"Notes passées par le tri : {nbTriesApres}");
+
+// 5. Réécrire la classe Promo 
+
+var promo = new Promo("M1 Info", notes);
+
+Console.WriteLine($"=== Promo : {promo.Nom} ===");
+Console.WriteLine($"Étudiants : {string.Join(", ", promo.Etudiants())}");
+Console.WriteLine($"Moyenne de Grace : {promo.Moyenne("Grace"):F2}");
+Console.WriteLine($"Moyenne d'un absent : {promo.Moyenne("Inconnu"):F2}");
+Console.WriteLine($"Moyenne générale : {promo.MoyenneGenerale():F2}");
+Console.WriteLine($"Major : {promo.Major()}");
+
+Console.WriteLine("\n--- Admis par matière ---");
+foreach (var (matiere, nb) in promo.NbAdmisParMatiere())
 {
-    Console.WriteLine($"  test de {n.Prenom} ({n.Matiere}) : {n.Valeur}");
-    return n.Valeur >= 15;
-});
+    Console.WriteLine($"{matiere} : {nb} admis");
+}
 
-Console.WriteLine($"Count 1 : {bonnesTrace.Count()}");
-Console.WriteLine($"Count 2 : {bonnesTrace.Count()}");
-
-Console.WriteLine("\n=== Avec ToList d'abord ===");
-var bonnesFigees = notes.Where(n =>
+Console.WriteLine("\n--- Relevé ---");
+foreach (var ligne in promo.Releve())
 {
-    Console.WriteLine($"  test de {n.Prenom} ({n.Matiere}) : {n.Valeur}");
-    return n.Valeur >= 15;
-}).ToList();
-
-Console.WriteLine($"Count 1 : {bonnesFigees.Count}");
-Console.WriteLine($"Count 2 : {bonnesFigees.Count}");
-
-// 3. Remplacez Count() > 0 par Any() dans le même montage.
-
-Console.WriteLine("\n=== Test avec Count() > 0 ===");
-bool avecCount = bonnesTrace.Count() > 0;
-Console.WriteLine($"Résultat Count() > 0 : {avecCount}");
-
-Console.WriteLine("\n=== Test avec Any() ===");
-bool avecAny = bonnesTrace.Any();
-Console.WriteLine($"Résultat Any() : {avecAny}");
-
-// 4. Placez le Where avant puis après un OrderBy dans une même requête. 
-
-Console.WriteLine("\n=== Where AVANT OrderBy ===");
-int nbTriesAvant = 0;
-var resAvant = notes
-    .Where(n => n.Valeur >= 15)
-    .OrderBy(n =>
-    {
-        nbTriesAvant++;
-        return n.Valeur;
-    })
-    .ToList();
-Console.WriteLine($"Notes passées par le tri : {nbTriesAvant}");
-
-Console.WriteLine("\n=== Where APRÈS OrderBy ===");
-int nbTriesApres = 0;
-var resApres = notes
-    .OrderBy(n =>
-    {
-        nbTriesApres++;
-        return n.Valeur;
-    })
-    .Where(n => n.Valeur >= 15)
-    .ToList();
-Console.WriteLine($"Notes passées par le tri : {nbTriesApres}");
+    Console.WriteLine(ligne);
+}
