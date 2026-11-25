@@ -13,7 +13,9 @@ namespace TpEf
             public required string Prenom { get; set; }
             public required string Promo { get; set; }
             public List<Note> Notes { get; set; } = []; // navigation : 1 → n
-        }
+
+            public string? Email { get; set; }
+    }
         public class Note
         {
             public int Id { get; set; }

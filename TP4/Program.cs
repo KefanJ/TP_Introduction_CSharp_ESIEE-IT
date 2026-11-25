@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Net;
 using TpEf;
 
 using (var db = new PromoContext())
@@ -71,4 +72,43 @@ using (var db = new PromoContext())
         Console.WriteLine($"Etudiant : {m.Etudiant}, Moyenne pondérée : {m.Moyenne:F2}");
     }
 
+}
+
+/*
+ 
+4. Modifier, supprimer, faire évoluer (10 min) 
+Ces modifications sont enregistrées dans promo.db : relancer le programme les rejoue sur une base déjà 
+modifiée. Utilisez FirstOrDefault et testez null avant de modifier ou de supprimer. Pour retrouver les 
+résultats attendus, repartez d’une base neuve : supprimez promo.db, puis dotnet ef database update ; la 
+promo est réinsérée au lancement suivant.  
+ 
+ */
+
+
+
+using (var db = new PromoContext())
+{
+    // 14. Alan Turing passe en M2
+    var alan = db.Etudiants.FirstOrDefault(e => e.Nom == "Turing");
+    if (alan != null)
+    {
+        alan.Promo = "M2";
+        Console.WriteLine($"État d'Alan avant SaveChanges : {db.Entry(alan).State}");
+        db.SaveChanges();
+    }
+
+    // 15. Supprimer Linus Torvalds
+    var linus = db.Etudiants.FirstOrDefault(e => e.Nom == "Torvalds");
+    if (linus != null)
+    {
+        db.Etudiants.Remove(linus);
+        db.SaveChanges();
+    }
+    Console.WriteLine($"Notes restantes dans la base : {db.Notes.Count()}");
+
+    // 16. Coefficient des notes de Réseau à 2 sans charger les entités
+    int nb = db.Notes
+        .Where(n => n.Matiere == "Reseau")
+        .ExecuteUpdate(s => s.SetProperty(n => n.Coef, 2));
+    Console.WriteLine($"Notes de Réseau modifiées : {nb}");
 }

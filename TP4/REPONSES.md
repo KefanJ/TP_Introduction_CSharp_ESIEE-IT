@@ -47,3 +47,28 @@
 ### Question 13 — Moyenne pondérée par étudiant
 
 - **Traitement** : le filtre `.Where(e => e.Notes.Any())` écarte les étudiants sans note (`Hamilton`) et évite toute division par zéro lors du calcul `Sum(n => n.Valeur * n.Coef) / Sum(n => n.Coef)`, avant de trier les résultats par ordre décroissant avec `.OrderByDescending(...)`.
+
+## Étape 4 : Modifier, supprimer, faire évoluer
+
+### Question 14 — Passage d'Alan Turing en M2
+
+- **État et SQL généré** : avant `SaveChanges()`, `db.Entry(alan).State` affiche `Modified`. EF Core génère uniquement `UPDATE "Etudiants" SET "Promo" = @p0 WHERE "Id" = @p1`, ne mettant à jour que la colonne modifiée.
+
+### Question 15 — Suppression de Linus Torvalds
+
+- **Notes restantes** : il reste **11 notes** dans la base (13 initiales − les 2 notes de Linus, automatiquement supprimées par la contrainte `ON DELETE CASCADE`).
+
+### Question 16 — Mise à jour en masse avec `ExecuteUpdate`
+
+- **Lignes modifiées** : **4 lignes** sont modifiées (les notes de Réseau d'Ada, Alan, Grace et Barbara). `ExecuteUpdate` exécute directement la requête SQL `UPDATE` sans passer par `SaveChanges()`.
+
+### Question 17 — Migration `AjoutEmail`
+
+- **Évolution du schéma** : le fichier de migration généré ne contient qu'un `AddColumn` sur la table `Etudiants`. Après `dotnet ef database update`, les **5 étudiants** sont toujours présents dans la base et leur propriété `Email` vaut `null` (colonne SQL nullable).
+
+### Questions de réflexion (Étape 4)
+
+- **Pourquoi n'a-t-on appelé aucune méthode `Update` à la question 14 ?**
+  Parce que l'entité `alan` a été chargée depuis le `DbContext` et est donc suivie par son _Change Tracker_ (état initial `Unchanged`). Dès qu'on modifie une propriété en C#, EF Core détecte le changement par comparaison avec sa copie initiale (_snapshot_), passe l'entité à l'état `Modified` et génère le `UPDATE` ciblé lors du `SaveChanges()`.
+- **Après `ExecuteUpdate`, les objets `Note` déjà chargés dans le contexte ont-ils leur nouveau coefficient ? Pourquoi ?**
+  **Non.** `ExecuteUpdate` envoie directement une requête SQL `UPDATE` à la base de données en contournant complètement le _Change Tracker_ et le cache mémoire du `DbContext`. Les entités `Note` déjà chargées en mémoire conservent donc leur ancienne valeur de `Coef` tant qu'elles ne sont pas rechargées depuis la base.
